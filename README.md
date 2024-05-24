@@ -74,9 +74,9 @@ forms of procedural generation. Essentially it randomly fills a grid with empty 
 ##############################################################################################################
 ```
 
-# Binary Space Partitioning
+## Binary Space Partitioning
 
-## Algorithm
+### Algorithm
 
 Starting with a root rectangle, each rectangle is divided in roughly half (with minimums and maximums on size) until it reaches a certain depth or a size limit.
 This binary tree algorithm is useful for generating rooms that are guaranteed to not overlap but also vary in size. In the example below, each room is displayed
