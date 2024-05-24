@@ -1,7 +1,5 @@
 import random
 
-from simple_cellular_automata_cave import SimpleCellularAutomataCaveGenerator
-
 
 class BSPTreeNode:
     """ """
@@ -12,11 +10,16 @@ class BSPTreeNode:
         self.width = width
         self.height = height
         self.depth = depth
+        self.min_dimension = 5
 
         self.left = None
         self.right = None
 
-        if self.depth > 0 and self.width > 10 and self.height > 10:
+        if (
+            self.depth > 0
+            and self.width > self.min_dimension
+            and self.height > self.min_dimension
+        ):
             self.left, self.right = self.split()
 
     def split(self):
@@ -24,20 +27,24 @@ class BSPTreeNode:
             raise ValueError("This node has already been split")
 
         if self.width > self.height:
-            split = random.randint(1, self.width - 1)
-            self.left = BSPTreeNode(self.x, self.y, split, self.height, self.depth - 1)
-            self.right = BSPTreeNode(
+            split = random.randint(1, self.width - self.min_dimension)
+            left = BSPTreeNode(self.x, self.y, split, self.height, self.depth - 1)
+            right = BSPTreeNode(
                 self.x + split, self.y, self.width - split, self.height, self.depth - 1
             )
         else:
 
-            split = random.randint(1, self.height - 1)
-            self.left = BSPTreeNode(self.x, self.y, self.width, split, self.depth - 1)
-            self.right = BSPTreeNode(
+            split = random.randint(1, self.height - self.min_dimension)
+            left = BSPTreeNode(self.x, self.y, self.width, split, self.depth - 1)
+            right = BSPTreeNode(
                 self.x, self.y + split, self.width, self.height - split, self.depth - 1
             )
 
-        return self.left, self.right
+        for dimension in (left.width, left.height, right.width, right.height):
+            if dimension < self.min_dimension:
+                return None, None
+
+        return left, right
 
     def __str__(self):
         return f"BSPTreeNode(x={self.x}, y={self.y}, width={self.width}, height={self.height})"
@@ -47,7 +54,7 @@ class BSPTreeNode:
 
 
 class BSPTreeRoomGenerator:
-    def __init__(self, width=200, height=50, depth=10):
+    def __init__(self, width=200, height=50, depth=100):
         self.width = width
         self.height = height
         self.depth = depth
@@ -74,7 +81,7 @@ class BSPTreeRoomGenerator:
                 stack.append(node.right)
 
             if not node.left and not node.right:
-                c = characters.pop(0)
+                c = characters.pop(0) if characters else "#"
                 for y in range(node.y, node.y + node.height):
                     for x in range(node.x, node.x + node.width):
                         self.array[y][x] = c
