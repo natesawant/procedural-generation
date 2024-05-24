@@ -1,98 +1,93 @@
 import random
 
+from simple_cellular_automata_cave import SimpleCellularAutomataCaveGenerator
 
-class Rect:
-    def __init__(self, x, y, w, h):
+
+class BSPTreeNode:
+    """ """
+
+    def __init__(self, x, y, width, height, depth):
         self.x = x
         self.y = y
-        self.w = w
-        self.h = h
+        self.width = width
+        self.height = height
+        self.depth = depth
 
-    def center(self):
-        return int(self.x + self.w // 2, self.y + self.h // 2)
-
-    def __str__(self) -> str:
-        return f"{self.w} x {self.h} - ({self.x},{self.y})"
-
-
-class BSPNode:
-    def __init__(self, rect):
-        self.rect = rect
         self.left = None
         self.right = None
 
-    def __str__(self) -> str:
-        return f"{self.rect}"
+        if self.depth > 0 and self.width > 10 and self.height > 10:
+            self.left, self.right = self.split()
+
+    def split(self):
+        if self.left or self.right:
+            raise ValueError("This node has already been split")
+
+        if self.width > self.height:
+            split = random.randint(1, self.width - 1)
+            self.left = BSPTreeNode(self.x, self.y, split, self.height, self.depth - 1)
+            self.right = BSPTreeNode(
+                self.x + split, self.y, self.width - split, self.height, self.depth - 1
+            )
+        else:
+
+            split = random.randint(1, self.height - 1)
+            self.left = BSPTreeNode(self.x, self.y, self.width, split, self.depth - 1)
+            self.right = BSPTreeNode(
+                self.x, self.y + split, self.width, self.height - split, self.depth - 1
+            )
+
+        return self.left, self.right
+
+    def __str__(self):
+        return f"BSPTreeNode(x={self.x}, y={self.y}, width={self.width}, height={self.height})"
+
+    def __repr__(self):
+        return self.__str__()
 
 
-def create_bsp_tree(rect, max_depth, min_size):
-    if max_depth == 0 or rect.w < min_size or rect.h < min_size:
-        return None
+class BSPTreeRoomGenerator:
+    def __init__(self, width=200, height=50, depth=10):
+        self.width = width
+        self.height = height
+        self.depth = depth
 
-    # Choose split axis (randomly for simplicity)
-    split_axis = random.choice(["x", "y"])
+        self.array = [["." for x in range(self.width)] for y in range(self.height)]
 
-    # Choose split position
-    split_value = (
-        random.uniform(rect.x + min_size, rect.x + rect.w - min_size)
-        if split_axis == "x"
-        else random.uniform(rect.y + min_size, rect.y + rect.h - min_size)
-    )
+    def generate_level(self):
+        self.root = BSPTreeNode(0, 0, self.width, self.height, self.depth - 1)
 
-    new_node = BSPNode(rect)
+    def print_level(self):
+        stack = [self.root]
 
-    # Split rectangle based on chosen axis
-    if split_axis == "x":
-        left_rect = Rect(rect.x, rect.y, split_value - rect.x, rect.h)
-        right_rect = Rect(split_value, rect.y, rect.w - (split_value - rect.x), rect.h)
-    else:
-        left_rect = Rect(rect.x, rect.y, rect.w, split_value - rect.y)
-        right_rect = Rect(rect.x, split_value, rect.w, rect.h - (split_value - rect.y))
+        characters = list(
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+        )
 
-    new_node.left = create_bsp_tree(left_rect, max_depth - 1, min_size)
-    new_node.right = create_bsp_tree(right_rect, max_depth - 1, min_size)
+        while stack:
+            node = stack.pop()
 
-    return new_node
+            print(node)
+            if node.left:
+                stack.append(node.left)
+            if node.right:
+                stack.append(node.right)
+
+            if not node.left and not node.right:
+                c = characters.pop(0)
+                for y in range(node.y, node.y + node.height):
+                    for x in range(node.x, node.x + node.width):
+                        self.array[y][x] = c
+
+        for h in range(len(self.array)):
+            row = ""
+            for w in range(len(self.array[h])):
+                row += self.array[h][w]
+
+            print(row)
 
 
-# Example usage
-room_size = 100
-max_depth = 4
-min_room_size = 50
-
-ascii_grid = [["0" for x in range(room_size)] for y in range(room_size)]
-
-root_rect = Rect(0, 0, room_size, room_size)
-bsp_tree = create_bsp_tree(root_rect, max_depth, min_room_size)
-
-num = list(range(1, 10))
-
-stack = [bsp_tree]
-
-while stack:
-    current = stack.pop()
-    print(current)
-    if current.left:
-        stack.append(current.left)
-    if current.right:
-        stack.append(current.right)
-
-    # Leaf
-    if not current.left and not current.right:
-        for dx in range(int(current.rect.x)):
-            for dy in range(int(current.rect.y)):
-                x = int(current.rect.w + dx)
-                y = int(current.rect.h + dy)
-
-                ascii_grid[x][y] = f"{num.pop()}"
-
-for h in range(len(ascii_grid)):
-    row = ""
-    for w in range(len(ascii_grid[h])):
-        row += ascii_grid[h][w]
-
-    print(row)
-
-# This example doesn't handle visualizing the BSP tree
-# You can define functions to traverse and process the tree structure
-# for your specific needs
+if __name__ == "__main__":
+    generator = BSPTreeRoomGenerator()
+    generator.generate_level()
+    generator.print_level()
