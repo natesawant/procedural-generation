@@ -21,6 +21,9 @@ class BSPTreeNode:
             and self.height > self.min_dimension
         ):
             self.left, self.right = self.split()
+            
+        while not self.left and not self.right and self.width * self.height > 625:
+            self.left, self.right = self.split()
 
     def split(self):
         if self.left or self.right:
