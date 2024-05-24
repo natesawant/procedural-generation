@@ -1,6 +1,6 @@
 import random
 
-class CellularAutomataGeneration:
+class SimpleCellularAutomataCaveGenerator:
     """
     Procedurally generates a `self.width` by `self.height` level that looks like a cave using cellular automata
     """
@@ -65,11 +65,11 @@ class CellularAutomataGeneration:
         for h in range(len(self.array)):
             row = ""
             for w in range(len(self.array[h])):
-                row += CellularAutomataGeneration.WALL if self.array[h][w] else CellularAutomataGeneration.EMPTY
+                row += SimpleCellularAutomataCaveGenerator.WALL if self.array[h][w] else SimpleCellularAutomataCaveGenerator.EMPTY
 
             print(row)
 
 if __name__ == "__main__":
-    generator = CellularAutomataGeneration()
+    generator = SimpleCellularAutomataCaveGenerator()
     generator.generate_level()
     generator.print_level()

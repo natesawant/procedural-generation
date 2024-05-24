@@ -2,7 +2,7 @@
 
 This repository is an sandbox to investigate different methods of generating levels.
 
-## Cellular Automata Cave Generation
+## Simple Cellular Automata Cave Generation
 
 ### Algorithm
 
